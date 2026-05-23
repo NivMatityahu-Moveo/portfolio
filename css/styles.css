@@ -262,6 +262,22 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .cv-contact { font-size: 13px; line-height: 1.9; margin-top: 8px; color: var(--ink); }
 
+.dl-cv {
+  display: inline-block;
+  margin-top: 32px;
+  padding: 10px 20px;
+  font-size: 11px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+}
+.dl-cv:hover { background: var(--ink); color: #fff; }
+.col-he .dl-cv { letter-spacing: .12em; font-family: 'Heebo','Assistant', sans-serif; }
+
 .back-home {
   display: block;
   text-align: center;

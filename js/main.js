@@ -29,3 +29,50 @@ if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(fitHeroTitle);
 }
 window.addEventListener('resize', fitHeroTitle);
+
+// Download CV: build a PDF from the live intro content so any future edits
+// to intro.html automatically appear in the downloaded resume.
+function downloadCV(lang) {
+  if (!window.html2pdf) return;
+  const isHe = lang === 'he';
+  const selCol = isHe ? '.col-he' : '.col-en';
+
+  const introCol = document.querySelector('.intro-cols ' + selCol);
+  const cvCol    = document.querySelector('.cv-block ' + selCol);
+  if (!cvCol) return;
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText =
+    'padding:40px 36px;color:#111;background:#fff;font-size:13px;line-height:1.6;' +
+    'font-family:' + (isHe ? "'Heebo','Assistant',sans-serif" : "'Work Sans',sans-serif") + ';' +
+    (isHe ? 'direction:rtl;text-align:right;' : '');
+
+  if (introCol) {
+    const bio = introCol.cloneNode(true);
+    bio.style.marginBottom = '24px';
+    wrap.appendChild(bio);
+    const hr = document.createElement('hr');
+    hr.style.cssText = 'border:none;border-top:1px solid #ccc;margin:24px 0;';
+    wrap.appendChild(hr);
+  }
+
+  const cv = cvCol.cloneNode(true);
+  cv.querySelectorAll('.dl-cv').forEach(el => el.remove());
+  wrap.appendChild(cv);
+
+  const filename = isHe ? 'Sharon-Barazani-CV-HE.pdf' : 'Sharon-Barazani-CV-EN.pdf';
+  window.html2pdf().set({
+    margin: 10,
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(wrap).save();
+}
+
+document.addEventListener('click', e => {
+  const link = e.target.closest('.dl-cv');
+  if (!link) return;
+  e.preventDefault();
+  downloadCV(link.dataset.lang);
+});
