@@ -64,21 +64,19 @@ img { max-width: 100%; height: auto; display: block; }
 .hero-title {
   font-family: var(--display);
   font-weight: 200;
-  font-size: clamp(48px, 10vw, 150px);
+  letter-spacing: 0.18em;
   line-height: 1.05;
   color: var(--ink);
   max-width: 1200px;
   margin: 0 auto;
+  /* Base size used for natural measurement; JS resizes each .line to fill
+     the container width so all three words share the same horizontal extent. */
+  font-size: 80px;
 }
-/* Each .line stretches its letters to fill the same width — gives the
-   justified look where SHARON / BARAZANI / PORTFOLIO all share one column. */
 .hero-title .line {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-}
-.hero-title .line > span {
-  display: inline-block;
+  display: block;
+  white-space: nowrap;
+  /* font-size is overridden per-line by js/main.js */
 }
 
 /* ---------- Footer ---------- */
