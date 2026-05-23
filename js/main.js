@@ -43,7 +43,8 @@ function downloadCV(lang) {
 
   const wrap = document.createElement('div');
   wrap.style.cssText =
-    'padding:40px 36px;color:#111;background:#fff;font-size:13px;line-height:1.6;' +
+    'width:794px;padding:40px 48px;box-sizing:border-box;' +
+    'color:#111;background:#fff;font-size:13px;line-height:1.6;' +
     'font-family:' + (isHe ? "'Heebo','Assistant',sans-serif" : "'Work Sans',sans-serif") + ';' +
     (isHe ? 'direction:rtl;text-align:right;' : '');
 
@@ -60,6 +61,13 @@ function downloadCV(lang) {
   cv.querySelectorAll('.dl-cv').forEach(el => el.remove());
   wrap.appendChild(cv);
 
+  // Attach offscreen — html2canvas needs the element rendered in the DOM
+  // with real dimensions, otherwise the resulting PDF comes out blank.
+  const stage = document.createElement('div');
+  stage.style.cssText = 'position:fixed;left:-10000px;top:0;';
+  stage.appendChild(wrap);
+  document.body.appendChild(stage);
+
   const filename = isHe ? 'Sharon-Barazani-CV-HE.pdf' : 'Sharon-Barazani-CV-EN.pdf';
   window.html2pdf().set({
     margin: 10,
@@ -67,7 +75,12 @@ function downloadCV(lang) {
     image: { type: 'jpeg', quality: 0.95 },
     html2canvas: { scale: 2, useCORS: true },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  }).from(wrap).save();
+  }).from(wrap).save().then(() => {
+    document.body.removeChild(stage);
+  }).catch(err => {
+    console.error('CV download failed', err);
+    document.body.removeChild(stage);
+  });
 }
 
 document.addEventListener('click', e => {
