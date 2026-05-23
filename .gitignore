@@ -1,0 +1,11 @@
+# Local scraping tooling (raw HTML, JSON snapshots, screenshots) — not part of the site
+_scrape/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
