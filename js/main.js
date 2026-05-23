@@ -30,10 +30,12 @@ if (document.fonts && document.fonts.ready) {
 }
 window.addEventListener('resize', fitHeroTitle);
 
-// Download CV: build a PDF from the live intro content so any future edits
-// to intro.html automatically appear in the downloaded resume.
+// Download CV: clones the intro paragraph + CV column for the requested
+// language into a hidden print-only container, then opens the browser's
+// print dialog. The user picks "Save as PDF". Because the source is the
+// live DOM, any future edits to intro.html automatically flow into the
+// downloaded resume.
 function downloadCV(lang) {
-  if (!window.html2pdf) return;
   const isHe = lang === 'he';
   const selCol = isHe ? '.col-he' : '.col-en';
 
@@ -41,46 +43,38 @@ function downloadCV(lang) {
   const cvCol    = document.querySelector('.cv-block ' + selCol);
   if (!cvCol) return;
 
-  const wrap = document.createElement('div');
-  wrap.style.cssText =
-    'width:794px;padding:40px 48px;box-sizing:border-box;' +
-    'color:#111;background:#fff;font-size:13px;line-height:1.6;' +
-    'font-family:' + (isHe ? "'Heebo','Assistant',sans-serif" : "'Work Sans',sans-serif") + ';' +
-    (isHe ? 'direction:rtl;text-align:right;' : '');
+  const root = document.createElement('div');
+  root.id = 'cv-print';
+  if (isHe) root.classList.add('he');
 
   if (introCol) {
     const bio = introCol.cloneNode(true);
-    bio.style.marginBottom = '24px';
-    wrap.appendChild(bio);
-    const hr = document.createElement('hr');
-    hr.style.cssText = 'border:none;border-top:1px solid #ccc;margin:24px 0;';
-    wrap.appendChild(hr);
+    bio.classList.add('cv-print-bio');
+    root.appendChild(bio);
   }
-
   const cv = cvCol.cloneNode(true);
   cv.querySelectorAll('.dl-cv').forEach(el => el.remove());
-  wrap.appendChild(cv);
+  root.appendChild(cv);
 
-  // Attach offscreen — html2canvas needs the element rendered in the DOM
-  // with real dimensions, otherwise the resulting PDF comes out blank.
-  const stage = document.createElement('div');
-  stage.style.cssText = 'position:fixed;left:-10000px;top:0;';
-  stage.appendChild(wrap);
-  document.body.appendChild(stage);
+  document.body.appendChild(root);
+  document.body.classList.add('printing-cv');
 
-  const filename = isHe ? 'Sharon-Barazani-CV-HE.pdf' : 'Sharon-Barazani-CV-EN.pdf';
-  window.html2pdf().set({
-    margin: 10,
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  }).from(wrap).save().then(() => {
-    document.body.removeChild(stage);
-  }).catch(err => {
-    console.error('CV download failed', err);
-    document.body.removeChild(stage);
-  });
+  // Browsers use document.title as the default Save-as-PDF filename.
+  const originalTitle = document.title;
+  document.title = isHe ? 'Sharon-Barazani-CV-HE' : 'Sharon-Barazani-CV-EN';
+
+  const cleanup = () => {
+    document.body.classList.remove('printing-cv');
+    document.title = originalTitle;
+    if (root.parentNode) root.parentNode.removeChild(root);
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+
+  // Slight delay so the print stylesheet is applied before the dialog opens.
+  setTimeout(() => window.print(), 50);
+  // Safety: if afterprint never fires (some Safari versions), clean up anyway.
+  setTimeout(cleanup, 4000);
 }
 
 document.addEventListener('click', e => {
