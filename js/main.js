@@ -1,7 +1,3 @@
-// Footer year
-const yearEl = document.getElementById('year');
-if (yearEl) yearEl.textContent = new Date().getFullYear();
-
 // Hero title: scale each word so they all fill the same horizontal width
 // at their natural letter-spacing (like the Wix original).
 function fitHeroTitle() {
